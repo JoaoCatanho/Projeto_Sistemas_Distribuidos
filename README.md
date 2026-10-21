@@ -15,9 +15,7 @@ Projeto da unidade curricular de **Sistemas Distribuídos** (MEI, Universidade d
 5. [Endereços úteis](#6-endereços-úteis)
 6. [Monitorização (Prometheus e Grafana)](#7-monitorização-prometheus-e-grafana)
 7. [Testes de carga (k6)](#8-testes-de-carga-k6)
-8. [CI – GitHub Actions](#9-ci--github-actions)
-9. [Autores](#10-autores)
-10. [Uso de IA](#11-uso-de-ia)
+8. [Uso de IA](#11-uso-de-ia)
 
 ---
 
