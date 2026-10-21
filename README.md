@@ -141,9 +141,9 @@ Configurado em `prometheus/prometheus.yml`, com `scrape_interval: 5s` e três jo
 Queries úteis:
 
 ```promql
-up                                                                     # serviços em cima (1)ou em baixo (0)
-sum(rate(gateway_requests_total[1m]))                                  # pedidos por segundo
-sum by (http_status) (increase(gateway_requests_total[15m]))           # respostas por status code
+up                                                                                         # serviços em cima (1)ou em baixo (0)
+sum(rate(gateway_requests_total[1m]))                                                      # pedidos por segundo
+sum by (http_status) (increase(gateway_requests_total[15m]))                               # respostas por status code
 histogram_quantile(0.95, sum by (le) (rate(gateway_request_duration_seconds_bucket[1m])))  # latência p95
 ```
 
