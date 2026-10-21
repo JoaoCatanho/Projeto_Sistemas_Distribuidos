@@ -188,18 +188,7 @@ Script: `k6/load-test.js`. Faz `GET http://api-gateway:8000/events` com:
 
 ---
 
-## 8. CI – GitHub Actions
-
-O workflow `.github/workflows/ci.yml` corre em cada push para `main` e em cada pull request. Faz o seguinte:
-1. Valida o `docker-compose.yml` (`docker compose config`).
-2. Constrói as imagens (`docker compose build`).
-3. Arranca o Catalog, o Gateway e o Prometheus.
-4. Testa os endpoints `/events`, `/events/{id}` e `/metrics`.
-5. Corre o k6 numa versão leve (10 utilizadores, 30 s), para a pipeline ser rápida e estável.
-
----
-
-## 9. Uso de IA
+## 8. Uso de IA
 
 O enunciado permite o uso de ferramentas de IA, desde que identificadas. Ferramenta utilizada: **Claude**.
 
