@@ -36,14 +36,22 @@ services:
   grafana:
     image: grafana/grafana:13.2.4
     container_name: grafana
+    volumes: # acrescentei o volume para provisionamento do datasource e dashboard
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dasboard1.json:/var/lib/grafana/dashboards/dasboard1.json
+    depends_on:
+      - prometheus
     ports:
       - "3000:3000"
     networks:
       - ticketmei-net
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg
     ports:
       - "8080:8080"
     volumes:
@@ -51,6 +59,7 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - ticketmei-net
   k6:
