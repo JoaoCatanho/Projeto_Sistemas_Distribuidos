@@ -81,13 +81,9 @@ services:
     container_name: order
     ports:
       - "8002:8002"
-    networks:
-      - ticketmei-net
-  notification:
-    build: ./notification
-    container_name: notification
-    ports:
-      - "8003:8003"
+    depends_on:
+      - catalog
+      - rabbitmq
     networks:
       - ticketmei-net
   rabbitmq:
