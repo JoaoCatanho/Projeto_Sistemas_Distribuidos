@@ -81,6 +81,8 @@ services:
   order:
     build: ./order
     container_name: order
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/ticketmei
     ports:
       - "8002:8002"
     depends_on:
@@ -88,9 +90,23 @@ services:
       - rabbitmq
     networks:
       - ticketmei-net
+  notification:
+    build: ./notification
+    container_name: notification
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/ticketmei
+    volumes:
+      - ./notification/data:/app/data
+    depends_on:
+      - rabbitmq
+    networks:
+      - ticketmei-net
+    restart: unless-stopped
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_VHOST: ticketmei
     ports:
       - "5672:5672" # onde os serviços se conectam
       - "15672:15672" # página web de administração

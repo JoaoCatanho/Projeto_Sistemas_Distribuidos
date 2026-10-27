@@ -5,7 +5,9 @@ from enum import Enum
 import httpx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-
+import json
+import os
+import pika
 app = FastAPI(title="TicketMEI - Order")
 
 CATALOG_URL = "http://catalog:8001/events"  # URL do serviço Catalog
@@ -72,7 +74,46 @@ def create_order(req: OrderRequest):
 
     # 3. (parte 3) enviar "OrderCreated" para o RabbitMQ
 
+    try:
+        publish_order_created(order)
+    except (pika.exceptions.AMQPError, OSError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Não foi possível enviar a compra para processamento",
+        ) from exc
+
     return order
+
+
+def publish_order_created(order: Order):
+    parameters = pika.URLParameters(
+        os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/ticketmei")
+    )
+    parameters.socket_timeout = 3
+    parameters.blocked_connection_timeout = 3
+
+    with pika.BlockingConnection(parameters) as connection:
+        channel = connection.channel()
+
+        channel.queue_declare(queue="orders.created", durable=True)
+        channel.confirm_delivery()
+
+        message = {
+            "type": "OrderCreated",
+            "order": order.model_dump(mode="json"),
+        }
+
+        channel.basic_publish(
+            exchange="",
+            routing_key="orders.created",
+            body=json.dumps(message).encode("utf-8"),
+            properties=pika.BasicProperties(
+                content_type="application/json",
+                delivery_mode=2,
+                message_id=order.id,
+            ),
+            mandatory=True,
+        )
 
 
 @app.get("/orders/{order_id}")

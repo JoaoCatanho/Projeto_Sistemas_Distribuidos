@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from urllib.parse import quote
 
 import httpx
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import Body, FastAPI, HTTPException, Request, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
 
@@ -118,8 +118,21 @@ def metrics():
     return Response(generate_latest(), headers={"content-type": CONTENT_TYPE_LATEST})
 
 
-@app.post("/orders")
-async def create_order(request: Request):
+@app.post("/orders", status_code=202)
+async def create_order(
+    request: Request,
+    body: dict = Body(
+        ...,
+        examples=[
+            {
+                "costumer_id": "cliente-001",
+                "event_id": "evt-101",
+                "tickets_quantity": 2,
+                "email": "cliente@example.com",
+            }
+        ],
+    ),
+):
     return await forward_to_order(request, "/orders")
 
 

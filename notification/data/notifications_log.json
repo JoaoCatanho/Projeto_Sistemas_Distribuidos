@@ -1,0 +1,14 @@
+[
+  {
+    "order_id": "1a930447-ff43-48e1-b787-95d050824499",
+    "email": "cliente-log@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-27T20:23:59.253324+00:00"
+  },
+  {
+    "order_id": "4da1665b-adae-4eda-a6d2-435cf377ec0f",
+    "email": "cliente2@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-27T20:26:28.425160+00:00"
+  }
+]
