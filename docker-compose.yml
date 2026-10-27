@@ -16,10 +16,12 @@ services:
     container_name: api-gateway
     environment:
       CATALOG_URL: http://catalog:8001
+      ORDER_URL: http://order:8002
     ports:
       - "8000:8000"
     depends_on:
       - catalog
+      - order
     networks:
       - ticketmei-net
 
@@ -94,4 +96,4 @@ services:
       - "15672:15672" # página web de administração
       - "15692:15692" # porta para o Prometheus coletar métricas
     networks:
-      - ticketmei-net # 
+      - ticketmei-net

@@ -11,12 +11,20 @@ from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Reuse the connection pool across requests and close it on shutdown.
-    async with httpx.AsyncClient(
-        base_url=os.getenv("CATALOG_URL", "http://catalog:8001"),
-        timeout=httpx.Timeout(5.0, connect=1.0),
-        trust_env=False,
-    ) as client:
-        app.state.catalog_client = client
+    async with (
+        httpx.AsyncClient(
+            base_url=os.getenv("CATALOG_URL", "http://catalog:8001"),
+            timeout=httpx.Timeout(5.0, connect=1.0),
+            trust_env=False,
+        ) as catalog_client,
+        httpx.AsyncClient(
+            base_url=os.getenv("ORDER_URL", "http://order:8002"),
+            timeout=httpx.Timeout(5.0, connect=1.0),
+            trust_env=False,
+        ) as order_client,
+    ):
+        app.state.catalog_client = catalog_client
+        app.state.order_client = order_client
         yield
 
 
@@ -45,7 +53,7 @@ async def measure_request(request: Request, call_next):
         return response
     finally:
         route = request.scope.get("route")
-        # Group IDs under /events/{event_id}; avoid unbounded metric labels.
+        # Group event and order IDs under their route patterns.
         endpoint = route.path if route else "unmatched"
         LATENCY.labels(endpoint=endpoint).observe(time.perf_counter() - start)
         REQUESTS.labels(
@@ -53,23 +61,46 @@ async def measure_request(request: Request, call_next):
         ).inc()
 
 
-async def forward_to_catalog(request: Request, path: str) -> Response:
+async def forward_request(
+    request: Request, client: httpx.AsyncClient, path: str, service_name: str
+) -> Response:
+    headers = {}
+    if "content-type" in request.headers:
+        headers["content-type"] = request.headers["content-type"]
     try:
-        upstream = await request.app.state.catalog_client.get(
-            path, params=request.query_params.multi_items()
+        upstream = await client.request(
+            method=request.method,
+            url=path,
+            params=request.query_params.multi_items(),
+            content=await request.body(),
+            headers=headers,
         )
     except httpx.TimeoutException as exc:
-        raise HTTPException(status_code=504, detail="Catalog request timed out") from exc
+        raise HTTPException(
+            status_code=504, detail=f"{service_name} request timed out"
+        ) from exc
     except httpx.RequestError as exc:
-        raise HTTPException(status_code=502, detail="Catalog service unavailable") from exc
+        raise HTTPException(
+            status_code=502, detail=f"{service_name} service unavailable"
+        ) from exc
 
-    # Preserve catalog errors (such as 404) as well as successful responses.
+    # Preserve upstream errors (such as 404/422) and successful responses (202).
     headers = {}
     if "content-type" in upstream.headers:
         headers["content-type"] = upstream.headers["content-type"]
     return Response(
         content=upstream.content, status_code=upstream.status_code, headers=headers
     )
+
+
+async def forward_to_catalog(request: Request, path: str) -> Response:
+    return await forward_request(
+        request, request.app.state.catalog_client, path, "Catalog"
+    )
+
+
+async def forward_to_order(request: Request, path: str) -> Response:
+    return await forward_request(request, request.app.state.order_client, path, "Order")
 
 
 @app.get("/events")
@@ -85,3 +116,13 @@ async def get_event(event_id: str, request: Request):
 @app.get("/metrics", include_in_schema=False)
 def metrics():
     return Response(generate_latest(), headers={"content-type": CONTENT_TYPE_LATEST})
+
+
+@app.post("/orders")
+async def create_order(request: Request):
+    return await forward_to_order(request, "/orders")
+
+
+@app.get("/orders/{order_id}")
+async def get_order(order_id: str, request: Request):
+    return await forward_to_order(request, f"/orders/{quote(order_id, safe='')}")
