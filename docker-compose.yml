@@ -76,3 +76,26 @@ services:
       - ticketmei-net
     profiles:
       - testing
+  order:
+    build: ./order
+    container_name: order
+    ports:
+      - "8002:8002"
+    networks:
+      - ticketmei-net
+  notification:
+    build: ./notification
+    container_name: notification
+    ports:
+      - "8003:8003"
+    networks:
+      - ticketmei-net
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # onde os serviços se conectam
+      - "15672:15672" # página web de administração
+      - "15692:15692" # porta para o Prometheus coletar métricas
+    networks:
+      - ticketmei-net # 
