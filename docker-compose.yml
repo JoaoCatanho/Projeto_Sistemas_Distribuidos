@@ -95,6 +95,8 @@ services:
     container_name: notification
     environment:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/ticketmei
+    ports:
+      - "8003:8003"
     volumes:
       - ./notification/data:/app/data
     depends_on:

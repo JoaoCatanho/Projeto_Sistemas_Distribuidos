@@ -10,5 +10,11 @@
     "email": "cliente2@example.com",
     "status": "SENT",
     "processed_at": "2026-10-27T20:26:28.425160+00:00"
+  },
+  {
+    "order_id": "3d14f289-6514-4e7a-9a6e-1a90b14acee1",
+    "email": "cliente3@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:01:09.941225+00:00"
   }
 ]

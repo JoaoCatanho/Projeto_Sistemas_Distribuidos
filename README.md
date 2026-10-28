@@ -29,6 +29,7 @@ Projeto da unidade curricular de **Sistemas Distribuídos** (MEI, Universidade d
 |---|---|---|
 | api-gateway | 8000 | Ponto de entrada público; reencaminha os pedidos para o Catalog |
 | catalog | 8001 | Serve os metadados dos eventos (concertos, locais, preços) |
+| notification | 8003 | Consome `OrderCreated` do RabbitMQ, simula o envio de email e expõe métricas |
 | prometheus | 9090 | Recolhe as métricas de todos os serviços |
 | grafana | 3000 | Dashboards de monitorização |
 | cadvisor | 8080 | Métricas de CPU e memória dos containers |
@@ -62,6 +63,14 @@ Armazenamento: `catalog/data/events.json`.
 
 Exemplo de resposta de `GET /events/evt-101`:
 
+### Notification (porta 8003)
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/metrics` | Métricas no formato Prometheus |
+
+Consome a fila `orders.created` e guarda cada resultado em `notification/data/notifications_log.json`, com `order_id`, `email`, `status` (`SENT` ou `FAILED`) e `processed_at`.
+
 ---
 
 ## 3. Métricas
@@ -72,8 +81,12 @@ Exemplo de resposta de `GET /events/evt-101`:
 | API Gateway | `gateway_request_duration_seconds` | Histogram | `endpoint` |
 | Catalog | `catalog_requests_total` | Counter | `endpoint`, `http_status` |
 | Catalog | `catalog_request_duration_seconds` | Histogram | – |
+| Notification | `notifications_processed_total` | Counter | `status` (`SENT`, `FAILED`) |
+| Notification | `notification_processing_duration_seconds` | Histogram | – |
 
-As métricas são registadas num middleware. O label `endpoint` usa o padrão da rota (ex.: `/events/{event_id}`) e não o URL concreto, para não criar uma série nova por cada id. A biblioteca `prometheus_client` também exporta automaticamente métricas do processo (`process_cpu_seconds_total`, `process_resident_memory_bytes`).
+As métricas HTTP são registadas num middleware. O label `endpoint` usa o padrão da rota (ex.: `/events/{event_id}`) e não o URL concreto, para não criar uma série nova por cada id. A biblioteca `prometheus_client` também exporta automaticamente métricas do processo (`process_cpu_seconds_total`, `process_resident_memory_bytes`).
+
+No Notification, o contador é incrementado depois de guardar o resultado do envio simulado. O histograma mede o tempo de envio e persistência. Mensagens inválidas descartadas e consultas a `/metrics` não alteram estas métricas. Os valores começam em zero em cada arranque do serviço; o histórico no ficheiro JSON não é recontado.
 
 ---
 
@@ -102,6 +115,7 @@ docker compose logs -f api-gateway
 curl.exe http://localhost:8000/events
 curl.exe http://localhost:8000/events/evt-101
 curl.exe http://localhost:8001/metrics
+curl.exe http://localhost:8003/metrics
 
 # Recriar o Grafana (depois de alterar provisioning ou dashboards)
 docker compose up -d --force-recreate grafana
@@ -124,6 +138,7 @@ docker compose down
 | http://localhost:8001/events | Eventos diretamente no Catalog |
 | http://localhost:8001/docs | Swagger do Catalog |
 | http://localhost:8001/metrics | Métricas do Catalog |
+| http://localhost:8003/metrics | Métricas do Notification |
 | http://localhost:9090 | Prometheus |
 | http://localhost:9090/targets | Estado dos targets (devem estar todos UP) |
 | http://localhost:3000 | Grafana (utilizador `admin`, password `admin`) |
@@ -134,7 +149,7 @@ docker compose down
 ## 6. Monitorização (Prometheus e Grafana)
 
 ### Prometheus
-Configurado em `prometheus/prometheus.yml`, com `scrape_interval: 5s` e três jobs: `api-gateway:8000`, `catalog:8001` e `cadvisor:8080`.
+Configurado em `prometheus/prometheus.yml`, com `scrape_interval: 5s` e os jobs `api-gateway:8000`, `catalog:8001`, `cadvisor:8080`, `order:8002` e `notification:8003`.
 
 Queries úteis:
 
@@ -143,6 +158,8 @@ up                                                                              
 sum(rate(gateway_requests_total[1m]))                                                      # pedidos por segundo
 sum by (http_status) (increase(gateway_requests_total[15m]))                               # respostas por status code
 histogram_quantile(0.95, sum by (le) (rate(gateway_request_duration_seconds_bucket[1m])))  # latência p95
+sum by (status) (rate(notifications_processed_total[1m]))                                # notificações por segundo e estado
+histogram_quantile(0.95, sum by (le) (rate(notification_processing_duration_seconds_bucket[1m]))) # processamento p95
 ```
 
 ### Grafana – provisioning

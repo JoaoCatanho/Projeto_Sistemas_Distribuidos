@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pika
+from prometheus_client import Counter, Histogram, start_http_server
 
 
 logging.basicConfig(
@@ -20,6 +21,18 @@ RABBITMQ_URL = os.getenv(
 QUEUE_NAME = "orders.created"
 EMAIL_DELAY_SECONDS = 0.1
 LOG_FILE = Path(__file__).parent / "data" / "notifications_log.json"
+
+NOTIFICATIONS_PROCESSED = Counter(
+    "notifications_processed_total",
+    "Total de notificações processadas por estado",
+    ["status"],
+)
+PROCESSING_DURATION = Histogram(
+    "notification_processing_duration_seconds",
+    "Tempo de processamento das notificações, incluindo envio e persistência",
+)
+for status in ("SENT", "FAILED"):
+    NOTIFICATIONS_PROCESSED.labels(status=status)
 
 
 def write_notifications_log(notifications):
@@ -75,6 +88,7 @@ def process_notification(channel, method, properties, body):
         channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
         return
 
+    started_at = time.perf_counter()
     # Simula o envio do email durante 100 ms, sem enviar um email real.
     status = "SENT"
     try:
@@ -84,6 +98,8 @@ def process_notification(channel, method, properties, body):
         logger.exception("Falha no envio simulado: order_id=%s email=%s", order_id, email)
 
     save_notification(order_id, email, status)
+    NOTIFICATIONS_PROCESSED.labels(status=status).inc()
+    PROCESSING_DURATION.observe(time.perf_counter() - started_at)
     logger.info(
         "Notificação processada (email simulado): order_id=%s email=%s status=%s",
         order_id,
@@ -91,13 +107,15 @@ def process_notification(channel, method, properties, body):
         status,
     )
 
-    # Confirmar apenas depois de guardar o resultado no ficheiro.
     channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def main():
     if not LOG_FILE.exists():
         write_notifications_log([])
+
+    start_http_server(8003)
+    logger.info("Métricas Prometheus disponíveis na porta 8003 em /metrics")
 
     while True:
         try:
