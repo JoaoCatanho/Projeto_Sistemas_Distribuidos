@@ -59,3 +59,30 @@ jobs:
           file: ./${{ matrix.service }}/Dockerfile
           push: true
           tags: ghcr.io/joaocatanho/ticketmei-${{ matrix.service }}:${{ github.sha }}
+          
+  update-manifests:
+    needs: [changes, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Update image tags in k8s
+        run: |
+          cd k8s
+          for service in $(echo '${{ needs.changes.outputs.services }}' | jq -r '.[]'); do
+            kustomize edit set image ticketmei-$service=ghcr.io/joaocatanho/ticketmei-$service:${{ github.sha }}
+          done
+          cat kustomization.yaml
+      -
+        name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add k8s/kustomization.yaml
+          git commit -m "Atualiza imagens para ${{ github.sha }} [skip ci]" || exit 0
+          git pull --rebase
+          git push
