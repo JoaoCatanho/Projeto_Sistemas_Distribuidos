@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - api-gateway/deployment.yaml
+  - api-gateway/service.yaml
+  - catalog/deployment.yaml
+  - catalog/service.yaml
+  - order/deployment.yaml
+  - order/service.yaml
+  - notification/pvc.yaml
+  - notification/deployment.yaml
+  - notification/service.yaml
+  - rabbitmq/secret.yaml
+  - rabbitmq/configmap.yaml
+  - rabbitmq/statefulset.yaml
+  - rabbitmq/service.yaml
+  - prometheus/rbac.yaml
+  - prometheus/configmap.yaml
+  - prometheus/pvc.yaml
+  - prometheus/deployment.yaml
+  - prometheus/service.yaml
+  - grafana/configmap.yaml
+  - grafana/dashboards-configmap.yaml
+  - grafana/pvc.yaml
+  - grafana/deployment.yaml
+  - grafana/service.yaml
+  - cadvisor/daemonset.yaml
+  - cadvisor/service.yaml
+# The k6 Job is applied separately, only when a load test is requested.

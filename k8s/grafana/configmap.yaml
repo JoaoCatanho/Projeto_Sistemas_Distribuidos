@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-provisioning
+  namespace: ticketmei
+data:
+  datasource.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: a72340b1-d871-4028-bbf1-1795e3553e62
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+  dashboard.yml: |
+    apiVersion: 1
+    providers:
+      - name: ticketmei
+        type: file
+        options:
+          path: /var/lib/grafana/dashboards

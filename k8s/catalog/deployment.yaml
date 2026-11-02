@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog
+  namespace: ticketmei
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog
+  template:
+    metadata:
+      labels:
+        app: catalog
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: catalog
+          image: ticketmei-catalog:local
+          ports:
+            - name: http
+              containerPort: 8001
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2

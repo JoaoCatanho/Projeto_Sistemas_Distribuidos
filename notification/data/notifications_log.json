@@ -16,5 +16,71 @@
     "email": "cliente3@example.com",
     "status": "SENT",
     "processed_at": "2026-10-28T10:01:09.941225+00:00"
+  },
+  {
+    "order_id": "8cdb53ba-c75e-44ae-b402-ca8d1d0e1007",
+    "email": "cliente4@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:07:21.756266+00:00"
+  },
+  {
+    "order_id": "c4521cf3-6a15-415e-b520-8cc1ccc42322",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:07:44.840030+00:00"
+  },
+  {
+    "order_id": "a0064161-5377-4883-bd2b-6bef86cc0865",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:11:07.860022+00:00"
+  },
+  {
+    "order_id": "8b9bf4ef-7e7c-438d-9ab1-9a49173bde2e",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:11:09.146922+00:00"
+  },
+  {
+    "order_id": "c06b1a00-73e4-438b-adc2-0cfefae77d57",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:11:18.445399+00:00"
+  },
+  {
+    "order_id": "65f33001-900c-4230-95b8-6eb91cb4820f",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:11:39.774373+00:00"
+  },
+  {
+    "order_id": "15dace16-9903-45fd-be6e-902b09b1c9a8",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:13:35.691324+00:00"
+  },
+  {
+    "order_id": "1a1155b6-7d1e-4678-ae7e-8ac079b156c6",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:13:45.226087+00:00"
+  },
+  {
+    "order_id": "c1557288-0f7c-4554-bee6-eba3bb0f2185",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:13:49.254476+00:00"
+  },
+  {
+    "order_id": "f88fb9ca-bba5-4b3a-9a5f-6c839c0af2c1",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:13:55.183596+00:00"
+  },
+  {
+    "order_id": "3648d7e7-bd5c-4de8-971c-1764eac4154d",
+    "email": "cliente6@example.com",
+    "status": "SENT",
+    "processed_at": "2026-10-28T10:13:58.060328+00:00"
   }
 ]
