@@ -24,8 +24,9 @@ data:
       - job_name: rabbitmq
         static_configs:
           - targets: ['rabbitmq:15692']
-      # Order currently has no /metrics endpoint. Add a scrape job after
-      # instrumenting the application; scraping port 8002 now returns 404.
+      - job_name: order
+        static_configs:
+          - targets: ['order:8002']
       - job_name: cadvisor
         kubernetes_sd_configs:
           - role: pod
