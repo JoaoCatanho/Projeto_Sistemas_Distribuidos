@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-
+from fastapi import Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, generate_latest
 import httpx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -13,6 +14,12 @@ app = FastAPI(title="TicketMEI - Order")
 CATALOG_URL = "http://catalog:8001/events"  # URL do serviço Catalog
 
 MAX_TICKETS = 4  # limite de bilhetes por pedido (RF2)
+
+ORDERS_INITIATED = Counter(
+    "orders_initiated_total",
+    "Total de pedidos criados",
+    ["status"],
+)  # contador de pedidos criados, com label status (PENDING, CONFIRMED, etc)
 
 
 class OrderStatus(str, Enum):
@@ -77,11 +84,14 @@ def create_order(req: OrderRequest):
     try:
         publish_order_created(order)
     except (pika.exceptions.AMQPError, OSError) as exc:
+        order.status = OrderStatus.FAILED
+        ORDERS_INITIATED.labels(status="FAILED").inc()
+        ORDERS[order_id] = order
         raise HTTPException(
             status_code=503,
             detail="Não foi possível enviar a compra para processamento",
         ) from exc
-
+    ORDERS_INITIATED.labels(status="PENDING").inc()
     return order
 
 
@@ -121,3 +131,7 @@ def get_order(order_id: str):
     if order_id not in ORDERS:
         raise HTTPException(status_code=404, detail="Pedido não encontrado")
     return ORDERS[order_id]
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
