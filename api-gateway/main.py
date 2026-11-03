@@ -2,7 +2,7 @@ import os
 import time
 from contextlib import asynccontextmanager
 from urllib.parse import quote
-
+import redis.asyncio as redis
 import httpx
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
@@ -25,7 +25,9 @@ async def lifespan(app: FastAPI):
     ):
         app.state.catalog_client = catalog_client
         app.state.order_client = order_client
+        app.state.redis = redis.from_url(os.getenv("REDIS_URL", "redis://redis:6379"), socket_timeout=5, socket_connect_timeout=0.5)
         yield
+        await app.state.redis.close()
 
 
 app = FastAPI(title="TicketMei API Gateway", lifespan=lifespan)
@@ -38,7 +40,33 @@ REQUESTS = Counter(
 LATENCY = Histogram(
     "gateway_request_duration_seconds", "Gateway request duration", ["endpoint"]
 )
+# Rate Limiter 
+RATE_LIMITED = Counter(
+    "gateway_rate_limited_total", "Pedidos rejeitados pelo rate limiter (429)"
+)
+# Rate Limiter
+RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_SECOND", "5"))  # pedidos por segundo por IP
 
+# definir a função de verificação de limite de taxa
+async def check_rate_limit(request: Request):
+    # Janela fixa de 1 segundo: uma chave por IP e por segundo
+    ip = request.client.host if request.client else "unknown"
+    key = f"ratelimit:{ip}:{int(time.time())}"
+    try:
+        pipe = request.app.state.redis.pipeline()
+        pipe.incr(key)
+        pipe.expire(key, 2)
+        count, _ = await pipe.execute()
+    except redis.RedisError:
+        # Se o Redis falhar, deixamos o pedido passar (fail-open) em vez de parar as compras
+        return
+    if count > RATE_LIMIT:
+        RATE_LIMITED.inc()
+        raise HTTPException(
+            status_code=429,
+            detail="Demasiados pedidos, tente novamente dentro de um segundo",
+            headers={"Retry-After": "1"},
+        )
 
 @app.middleware("http")
 async def measure_request(request: Request, call_next):
@@ -133,6 +161,7 @@ async def create_order(
         ],
     ),
 ):
+    await check_rate_limit(request)
     return await forward_to_order(request, "/orders")
 
 
