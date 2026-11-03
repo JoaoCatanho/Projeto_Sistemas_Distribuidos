@@ -55,7 +55,9 @@ spec:
           configMap:
             name: rabbitmq-config
   volumeClaimTemplates:
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: data
       spec:
         accessModes:

@@ -127,6 +127,29 @@ docker compose --profile testing run --rm k6
 docker compose down
 ```
 
+### Kubernetes local
+
+Os serviços têm configuração para o cluster Kubernetes local do Docker Desktop.
+Consulta [o guia de instalação e publicação no Kubernetes](argocd/README.md).
+
+O Redis está incluído em `k8s/kustomization.yaml`, com uma instância, persistência
+AOF num volume de 1 GiB e verificações de arranque, disponibilidade e saúde.
+Está acessível dentro do namespace `ticketmei` em `redis:6379`
+(`redis.ticketmei.svc.cluster.local:6379` a partir de outros namespaces).
+O API Gateway usa o Redis para limitar os pedidos a `POST /orders`.
+
+```sh
+kubectl --context docker-desktop apply -k k8s
+kubectl --context docker-desktop -n ticketmei rollout status statefulset/redis
+kubectl --context docker-desktop -n ticketmei exec redis-0 -- redis-cli -h redis ping
+# Resposta esperada: PONG
+```
+
+### Argo CD
+
+A instalação e a aplicação GitOps do TicketMEI estão em `argocd/`.
+Consulta [o guia de instalação, acesso e sincronização](argocd/README.md).
+
 ## 5. Endereços úteis
 
 | URL | Descrição |
@@ -205,7 +228,7 @@ Script: `k6/load-test.js`. Faz `GET http://api-gateway:8000/events` com:
 
 ## 8. Uso de IA
 
-O enunciado permite o uso de ferramentas de IA, desde que identificadas. Ferramenta utilizada: **Claude**.
+O enunciado permite o uso de ferramentas de IA, desde que identificadas. Ferramentas utilizadas: **Claude** e **Codex**.
 
 | Parte do projeto | Como foi usada |
 |---|---|
@@ -213,5 +236,6 @@ O enunciado permite o uso de ferramentas de IA, desde que identificadas. Ferrame
 | Análise dos testes k6 | Ajuda a interpretar os resultados (saturação, timeouts 504, variação entre testes). |
 | Documentação | Estruturação deste README. |
 | Aprendizagem | Explicação de conceitos (Docker, Compose, Prometheus, PromQL, Grafana, k6) e revisão do projeto. |
+| Redis, Argo CD e CI/CD | Codex: configuração do Redis no Kubernetes, instalação e configuração do Argo CD, diagnóstico da sincronização e correção da publicação de imagens para AMD64 e ARM64. |
 
 Todo o código foi executado e testado localmente pelo grupo.

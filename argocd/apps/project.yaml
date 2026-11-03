@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ticketmei
+  namespace: argocd
+spec:
+  description: Plataforma TicketMEI no Kubernetes local
+  sourceRepos:
+    - https://github.com/JoaoCatanho/Projeto_Sistemas_Distribuidos.git
+  destinations:
+    - namespace: ticketmei
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
