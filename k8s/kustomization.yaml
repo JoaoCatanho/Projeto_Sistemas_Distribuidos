@@ -30,7 +30,10 @@ resources:
 images:
 - name: ticketmei-api-gateway
   newName: ghcr.io/joaocatanho/ticketmei-api-gateway
-  newTag: 93b5bafbc2deea8fb21c9c68aae298a69c97bf7b
+  newTag: c5adccc0a32db1bb1c163628d09fe91831723027
+- name: ticketmei-notification
+  newName: ghcr.io/joaocatanho/ticketmei-notification
+  newTag: c5adccc0a32db1bb1c163628d09fe91831723027
 - name: ticketmei-order
   newName: ghcr.io/joaocatanho/ticketmei-order
   newTag: 827d5144418ca2baee5eb09830b134f2dca12d19
