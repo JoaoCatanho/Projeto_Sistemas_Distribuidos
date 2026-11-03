@@ -28,6 +28,9 @@ resources:
 - cadvisor/daemonset.yaml
 - cadvisor/service.yaml
 images:
+- name: ticketmei-api-gateway
+  newName: ghcr.io/joaocatanho/ticketmei-api-gateway
+  newTag: 93b5bafbc2deea8fb21c9c68aae298a69c97bf7b
 - name: ticketmei-order
   newName: ghcr.io/joaocatanho/ticketmei-order
   newTag: 827d5144418ca2baee5eb09830b134f2dca12d19
