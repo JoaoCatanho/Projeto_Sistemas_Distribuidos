@@ -17,11 +17,13 @@ services:
     environment:
       CATALOG_URL: http://catalog:8001
       ORDER_URL: http://order:8002
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     depends_on:
       - catalog
       - order
+      - redis
     networks:
       - ticketmei-net
 
@@ -113,5 +115,13 @@ services:
       - "5672:5672" # onde os serviços se conectam
       - "15672:15672" # página web de administração
       - "15692:15692" # porta para o Prometheus coletar métricas
+    networks:
+      - ticketmei-net
+  
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
     networks:
       - ticketmei-net
