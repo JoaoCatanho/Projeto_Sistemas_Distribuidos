@@ -41,4 +41,4 @@ images:
   newTag: 985000f9b9e943172b03f170611ff857d88a0068
 - name: ticketmei-order
   newName: ghcr.io/joaocatanho/ticketmei-order
-  newTag: 985000f9b9e943172b03f170611ff857d88a0068
+  newTag: 843f30867559f52ee5c0aa45f24705b51e22b4dc
