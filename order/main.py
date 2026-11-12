@@ -1,4 +1,4 @@
-# test 1
+# test 2
 
 import uuid
 from datetime import datetime, timezone
@@ -21,7 +21,7 @@ ORDERS_INITIATED = Counter(
     "orders_initiated_total",
     "Total de pedidos criados",
     ["status"],
-)  # contador de pedidos criados, com label status (PENDING, CONFIRMED, etc)
+)  # contador de pedidos criados, com label status
 
 
 class OrderStatus(str, Enum):
