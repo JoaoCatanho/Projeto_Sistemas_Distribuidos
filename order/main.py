@@ -111,7 +111,7 @@ def create_order(req: OrderRequest):
             status_code=503,
             detail="Não foi possível enviar a compra para processamento",
         ) from exc
-    ORDERS_INITIATED.labels(status="PENDING").inc()
+    ORDERS_INITIATED.labels(status="CONFIRMED").inc()
     return order
 
 
