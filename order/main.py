@@ -14,6 +14,7 @@ import pika
 app = FastAPI(title="TicketMEI - Order")
 
 CATALOG_URL = "http://catalog:8001/events"  # URL do serviço Catalog
+PAYMENT_URL = "http://catalog:8003/payment" # URL do payment
 
 MAX_TICKETS = 4  # limite de bilhetes por pedido (RF2)
 
@@ -54,7 +55,18 @@ class Order(BaseModel):
 ORDERS: dict[str, Order] = {}  # compras guardadas em memória: {order_id: Order}
 
 
-@app.post("/orders", status_code=202)
+@app.post("/orders", status_code=201)
+def chama_payment(order: Order) -> bool:
+    try:
+        r = httpx.post(
+            PAYMENT_URL,
+            json={"order_id": order.id, "amount": order.total_amount},
+            timeout=2.0,
+            )
+    except httpx.RequestError:   # timeout ou Payment em baixo
+        return False
+    return r.status_code == 201
+
 def create_order(req: OrderRequest):
     # 1. Perguntar o preço ao Catalog (comunicação síncrona)
     try:
@@ -81,8 +93,14 @@ def create_order(req: OrderRequest):
     )
     ORDERS[order_id] = order
 
-    # 3. (parte 3) enviar "OrderCreated" para o RabbitMQ
+    # 3. Parte do payment
+    if not chama_payment(order):
+        order.status = OrderStatus.FAILED
+        ORDERS_INITIATED.labels(status="FAILED").inc()
+        raise HTTPException(status_code=502, detail="Pagamento falhou")
+    order.status = OrderStatus.CONFIRMED
 
+    # 4. (parte 4) enviar "OrderCreated" para o RabbitMQ
     try:
         publish_order_created(order)
     except (pika.exceptions.AMQPError, OSError) as exc:
