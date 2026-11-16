@@ -14,7 +14,7 @@ import pika
 app = FastAPI(title="TicketMEI - Order")
 
 CATALOG_URL = "http://catalog:8001/events"  # URL do serviço Catalog
-PAYMENT_URL = "http://catalog:8003/payment" # URL do payment
+PAYMENT_URL = "http://catalog:8003/payments" # URL do payment
 
 MAX_TICKETS = 4  # limite de bilhetes por pedido (RF2)
 
@@ -54,8 +54,6 @@ class Order(BaseModel):
 
 ORDERS: dict[str, Order] = {}  # compras guardadas em memória: {order_id: Order}
 
-
-@app.post("/orders", status_code=201)
 def chama_payment(order: Order) -> bool:
     try:
         r = httpx.post(
@@ -66,6 +64,8 @@ def chama_payment(order: Order) -> bool:
     except httpx.RequestError:   # timeout ou Payment em baixo
         return False
     return r.status_code == 201
+
+@app.post("/orders", status_code=201)
 
 def create_order(req: OrderRequest):
     # 1. Perguntar o preço ao Catalog (comunicação síncrona)
