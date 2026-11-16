@@ -14,7 +14,7 @@ import pika
 app = FastAPI(title="TicketMEI - Order")
 
 CATALOG_URL = "http://catalog:8001/events"  # URL do serviço Catalog
-PAYMENT_URL = "http://catalog:8003/payments" # URL do payment
+PAYMENT_URL = "http://payment:8003/payments" # URL do payment
 
 MAX_TICKETS = 4  # limite de bilhetes por pedido (RF2)
 
@@ -24,6 +24,8 @@ ORDERS_INITIATED = Counter(
     ["status"],
 )  # contador de pedidos criados, com label status
 
+PAYMENT_REQUEST_NUMBER = Counter("payment_client_requests_total", "Pedidos do Order ao Payment (cada tentativa conta)",
+    ["status"],)
 
 class OrderStatus(str, Enum):
     PENDING = "PENDING"
@@ -64,6 +66,25 @@ def chama_payment(order: Order) -> bool:
     except httpx.RequestError:   # timeout ou Payment em baixo
         return False
     return r.status_code == 201
+
+def tenta_payment(order: Order) -> bool:
+    try:
+        r = httpx.post(
+            PAYMENT_URL,
+            json={"order_id": order.id, "amount": order.total_amount},
+            timeout=2.0,
+            )
+    except httpx.TimeoutException:
+        PAYMENT_REQUEST_NUMBER.labels(status="timeout").inc()
+        return False
+    except httpx.RequestError:
+        PAYMENT_REQUEST_NUMBER.labels(status="error").inc()
+        return False
+    if r.status_code == 201:
+        PAYMENT_REQUEST_NUMBER.labels(status="2xx").inc()
+        return True
+    PAYMENT_REQUEST_NUMBER.labels(status=str(r.status_code)).inc()
+    return False
 
 @app.post("/orders", status_code=201)
 
