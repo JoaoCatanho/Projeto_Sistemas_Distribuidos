@@ -121,7 +121,10 @@ curl.exe http://localhost:8003/metrics
 docker compose up -d --force-recreate grafana
 
 # Correr o teste de carga k6
-docker compose --profile testing run --rm k6
+docker compose --profile testing run --rm k6 
+
+# teste demo-rate-limiter.js
+Get-Content k6\demo-rate-limiter.js | kubectl -n ticketmei run k6-demo --rm -i --restart=Never --image=grafana/k6:0.49.0 -- run -
 
 # Parar e remover os containers
 docker compose down

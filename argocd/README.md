@@ -46,7 +46,7 @@ kubectl --context docker-desktop -n argocd get secret argocd-initial-admin-secre
 para windows
 ```sh
  $p = kubectl --context docker-desktop -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}'
->> [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($p))
+[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($p))
 ```
 
 A password é gerada pelo Argo CD e fica no Secret do cluster.
