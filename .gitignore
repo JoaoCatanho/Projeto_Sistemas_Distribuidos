@@ -2,3 +2,4 @@ Pdfs/
 .venv/
 __pycache__/
 .DS_Store
+payment/data/

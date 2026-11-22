@@ -8,6 +8,9 @@ resources:
 - catalog/service.yaml
 - order/deployment.yaml
 - order/service.yaml
+- payment/pvc.yaml
+- payment/deployment.yaml
+- payment/service.yaml
 - notification/pvc.yaml
 - notification/deployment.yaml
 - notification/service.yaml
@@ -29,6 +32,12 @@ resources:
 - grafana/service.yaml
 - cadvisor/daemonset.yaml
 - cadvisor/service.yaml
+configMapGenerator:
+- name: grafana-dashboards
+  namespace: ticketmei
+  behavior: merge
+  files:
+  - grafana/dashboard-order-payment.json
 images:
 - name: ticketmei-api-gateway
   newName: ghcr.io/joaocatanho/ticketmei-api-gateway

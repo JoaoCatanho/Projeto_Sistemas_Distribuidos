@@ -27,6 +27,9 @@ data:
       - job_name: order
         static_configs:
           - targets: ['order:8002']
+      - job_name: payment
+        static_configs:
+          - targets: ['payment:8003']
       - job_name: cadvisor
         kubernetes_sd_configs:
           - role: pod

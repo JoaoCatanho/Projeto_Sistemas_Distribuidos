@@ -1,0 +1,592 @@
+{
+  "uid": "ticketmei-order-payment",
+  "title": "TicketMEI - Order e Payment",
+  "description": "Estado do circuit breaker no Order, falhas no checkout e latência no Payment.",
+  "tags": [
+    "ticketmei",
+    "order",
+    "payment",
+    "resiliência"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "timezone": "browser",
+  "graphTooltip": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m"
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Estado do circuit breaker",
+      "description": "0 = fechado, 1 = aberto, 2 = semiaberto. Sem métrica indica que o Prometheus ainda não recebe o estado do Order.",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Fechado",
+                  "color": "green",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Aberto",
+                  "color": "red",
+                  "index": 2
+                },
+                "2": {
+                  "text": "Semiaberto",
+                  "color": "yellow",
+                  "index": 3
+                },
+                "-1": {
+                  "text": "Sem métrica",
+                  "color": "gray",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "circuit_breaker_state{job=\"order\"} or on() vector(-1)",
+          "range": false,
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Disponibilidade do Payment",
+      "description": "Resultado da recolha de /metrics pelo Prometheus.",
+      "type": "stat",
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Indisponível",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Disponível",
+                  "color": "green",
+                  "index": 2
+                },
+                "-1": {
+                  "text": "Sem recolha",
+                  "color": "gray",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "min(up{job=\"payment\"}) or vector(-1)",
+          "range": false,
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Latência p95 do Payment",
+      "description": "Tempo abaixo do qual ficaram 95% dos pedidos de pagamento na janela de cálculo. Requer tráfego no Payment.",
+      "type": "stat",
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2,
+          "noValue": "Sem pedidos",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(payment_processing_duration_seconds_bucket{job=\"payment\"}[$__rate_interval])))",
+          "range": false,
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Histórico do circuito",
+      "description": "Mostra quando o Order abriu o circuito e quando voltou a aceitar pedidos de pagamento.",
+      "type": "state-timeline",
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 5
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Fechado",
+                  "color": "green",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Aberto",
+                  "color": "red",
+                  "index": 2
+                },
+                "2": {
+                  "text": "Semiaberto",
+                  "color": "yellow",
+                  "index": 3
+                },
+                "-1": {
+                  "text": "Sem métrica",
+                  "color": "gray",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "fillOpacity": 75,
+            "lineWidth": 0,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "alignValue": "center",
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "circuit_breaker_state{job=\"order\"} or on() vector(-1)",
+          "range": true,
+          "instant": false,
+          "legendFormat": "Circuito Order"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Erros HTTP no Payment",
+      "description": "Respostas HTTP 5xx de POST /payments por segundo, agrupadas por código. Inclui falhas simuladas.",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum by (http_status) (rate(payment_requests_total{job=\"payment\",http_status=~\"5..\"}[$__rate_interval]))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "HTTP {{http_status}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Erros no checkout",
+      "description": "Respostas HTTP 502, 503 ou 504 a POST /orders através do Gateway.",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum by (http_status) (rate(gateway_requests_total{job=\"api-gateway\",method=\"POST\",endpoint=\"/orders\",http_status=~\"50[234]\"}[$__rate_interval]))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "HTTP {{http_status}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Latência do checkout e do Payment",
+      "description": "Compara o p95 do POST /orders no Gateway com o p95 do POST /payments. Quando o circuito abre, o checkout pode responder mais depressa mesmo que o Payment continue lento.",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(gateway_request_duration_seconds_bucket{job=\"api-gateway\",endpoint=\"/orders\"}[$__rate_interval])))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "Checkout p95"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "B",
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(payment_processing_duration_seconds_bucket{job=\"payment\"}[$__rate_interval])))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "Payment p95"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Pedidos bloqueados pelo circuito",
+      "description": "Fallbacks por segundo enquanto o circuito impede a chamada ao Payment. Requer a métrica circuit_breaker_fallbacks_total do Order.",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "noValue": "Sem métrica",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "a72340b1-d871-4028-bbf1-1795e3553e62"
+          },
+          "refId": "A",
+          "editorMode": "code",
+          "expr": "sum(rate(circuit_breaker_fallbacks_total{job=\"order\"}[$__rate_interval]))",
+          "range": true,
+          "instant": false,
+          "legendFormat": "Fallbacks"
+        }
+      ]
+    }
+  ]
+}

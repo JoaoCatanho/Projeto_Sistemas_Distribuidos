@@ -30,6 +30,7 @@ Projeto da unidade curricular de **Sistemas Distribuídos** (MEI, Universidade d
 | api-gateway | 8000 | Ponto de entrada público; reencaminha os pedidos para o Catalog |
 | catalog | 8001 | Serve os metadados dos eventos (concertos, locais, preços) |
 | notification | 8003 | Consome `OrderCreated` do RabbitMQ, simula o envio de email e expõe métricas |
+| payment | 8003 | Simula pagamentos, erros e atrasos; persiste resultados em SQLite |
 | prometheus | 9090 | Recolhe as métricas de todos os serviços |
 | grafana | 3000 | Dashboards de monitorização |
 | cadvisor | 8080 | Métricas de CPU e memória dos containers |
@@ -70,6 +71,14 @@ Exemplo de resposta de `GET /events/evt-101`:
 | GET | `/metrics` | Métricas no formato Prometheus |
 
 Consome a fila `orders.created` e guarda cada resultado em `notification/data/notifications_log.json`, com `order_id`, `email`, `status` (`SENT` ou `FAILED`) e `processed_at`.
+
+### Payment (porta interna 8003)
+
+Implementa `POST /payments`, `POST /payments/configure-faults` e `GET /metrics`.
+O Order recebe `201` no sucesso e `500` numa falha simulada. Os pagamentos são
+guardados em SQLite, com proteção contra repetição de cobranças para o mesmo
+`order_id`. Consulta [a documentação do Payment](payment/README.md) para exemplos,
+configuração de falhas e métricas.
 
 ---
 
@@ -199,6 +208,12 @@ O Grafana configura-se automaticamente no arranque, sem passos manuais:
 | Dashboard | Painéis |
 |---|---|
 | **TicketMei - P1** (`dasboard1.json`) | Débito do Gateway (RPS), latência p95/p99, taxa de erros HTTP (%), CPU e memória por container |
+| **TicketMEI - Order e Payment** (`k8s/grafana/dashboard-order-payment.json`) | Estado e histórico do circuito, disponibilidade do Payment, erros HTTP, latência p95 e fallbacks |
+
+O dashboard de Order e Payment é carregado pelo Grafana no Compose e no
+Kubernetes. Os painéis do circuito precisam de `circuit_breaker_state` e
+`circuit_breaker_fallbacks_total` no Order. Os erros e a latência aparecem à
+medida que o Prometheus recolhe pedidos de compra e pagamento.
 
 > No Docker Desktop para Windows, o cAdvisor não consegue obter os nomes dos containers, por isso os painéis de CPU/memória por container podem ficar vazios.
 
@@ -240,5 +255,6 @@ O enunciado permite o uso de ferramentas de IA, desde que identificadas. Ferrame
 | Documentação | Estruturação deste README. |
 | Aprendizagem | Explicação de conceitos (Docker, Compose, Prometheus, PromQL, Grafana, k6) e revisão do projeto. |
 | Redis, Argo CD e CI/CD | Codex: configuração do Redis no Kubernetes, instalação e configuração do Argo CD, diagnóstico da sincronização e correção da publicação de imagens para AMD64 e ARM64. |
+| Payment | Codex: implementação dos endpoints, simulação de falhas e atrasos, persistência SQLite e integração com Compose, Kubernetes, Prometheus e CI. |
 
 Todo o código foi executado e testado localmente pelo grupo.

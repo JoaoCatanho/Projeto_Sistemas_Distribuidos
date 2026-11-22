@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment
+  namespace: ticketmei
+spec:
+  # Uma instância é proprietária da base de dados SQLite no volume persistente.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: payment
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: payment
+          image: ticketmei-payment:local
+          ports:
+            - name: http
+              containerPort: 8003
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 2
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: payment-data

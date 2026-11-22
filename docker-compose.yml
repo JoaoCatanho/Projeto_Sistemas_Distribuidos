@@ -2,6 +2,9 @@ networks:
   ticketmei-net:
     driver: bridge
 
+volumes:
+  payment-data:
+
 services:
   catalog:
     build: ./catalog
@@ -43,6 +46,7 @@ services:
     volumes: # acrescentei o volume para provisionamento do datasource e dashboard
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dasboard1.json:/var/lib/grafana/dashboards/dasboard1.json
+      - ./k8s/grafana/dashboard-order-payment.json:/var/lib/grafana/dashboards/dashboard-order-payment.json:ro
     depends_on:
       - prometheus
     ports:
@@ -90,6 +94,14 @@ services:
     depends_on:
       - catalog
       - rabbitmq
+      - payment
+    networks:
+      - ticketmei-net
+  payment:
+    build: ./payment
+    container_name: payment
+    volumes:
+      - payment-data:/app/data
     networks:
       - ticketmei-net
   notification:

@@ -12,7 +12,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      services: ${{ github.event_name == 'workflow_dispatch' && '["api-gateway","catalog","order","notification"]' || steps.filter.outputs.changes }}
+      services: ${{ github.event_name == 'workflow_dispatch' && '["api-gateway","catalog","order","notification","payment"]' || steps.filter.outputs.changes }}
     steps:
       -
         name: Checkout
@@ -35,6 +35,9 @@ jobs:
               - '.github/workflows/cd.yaml'
             notification:
               - 'notification/**'
+              - '.github/workflows/cd.yaml'
+            payment:
+              - 'payment/**'
               - '.github/workflows/cd.yaml'
 
   build:
