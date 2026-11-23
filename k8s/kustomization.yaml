@@ -33,21 +33,24 @@ resources:
 - cadvisor/daemonset.yaml
 - cadvisor/service.yaml
 configMapGenerator:
-- name: grafana-dashboards
-  namespace: ticketmei
-  behavior: merge
+- behavior: merge
   files:
   - grafana/dashboard-order-payment.json
+  name: grafana-dashboards
+  namespace: ticketmei
 images:
 - name: ticketmei-api-gateway
   newName: ghcr.io/joaocatanho/ticketmei-api-gateway
-  newTag: 985000f9b9e943172b03f170611ff857d88a0068
+  newTag: c5f17ba458ccb46526c292db8718b414737a2b5b
 - name: ticketmei-catalog
   newName: ghcr.io/joaocatanho/ticketmei-catalog
-  newTag: 5db334130ec419f85a23994a54ac2d32a9bfe322
+  newTag: c5f17ba458ccb46526c292db8718b414737a2b5b
 - name: ticketmei-notification
   newName: ghcr.io/joaocatanho/ticketmei-notification
-  newTag: 985000f9b9e943172b03f170611ff857d88a0068
+  newTag: c5f17ba458ccb46526c292db8718b414737a2b5b
 - name: ticketmei-order
   newName: ghcr.io/joaocatanho/ticketmei-order
-  newTag: 92256634d3ade1ce1eeca1074d266bb8fb835586
+  newTag: c5f17ba458ccb46526c292db8718b414737a2b5b
+- name: ticketmei-payment
+  newName: ghcr.io/joaocatanho/ticketmei-payment
+  newTag: c5f17ba458ccb46526c292db8718b414737a2b5b
