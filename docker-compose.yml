@@ -100,6 +100,8 @@ services:
   payment:
     build: ./payment
     container_name: payment
+    ports:
+      - "8004:8003"   # no teu PC é a 8004, dentro do Docker continua a ser a 8003
     volumes:
       - payment-data:/app/data
     networks:
