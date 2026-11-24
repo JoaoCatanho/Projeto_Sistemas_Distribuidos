@@ -250,5 +250,59 @@
     "email": "demo@example.com",
     "status": "SENT",
     "processed_at": "2026-11-22T16:01:36.734611+00:00"
+  },
+  {
+    "order_id": "2ac00987-aef0-47a0-98d5-2bfa82b56c21",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:37:02.562856+00:00"
+  },
+  {
+    "order_id": "2b376544-1fab-4c85-b0ab-94e56000e72b",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:37:02.693324+00:00"
+  },
+  {
+    "order_id": "5c2d4fef-c9ca-4560-a78a-37bfe7652390",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:37:02.808137+00:00"
+  },
+  {
+    "order_id": "4cfdb5e3-024b-4a48-81e8-210a1db4587c",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:37:02.925875+00:00"
+  },
+  {
+    "order_id": "6f6cff4d-e824-4e78-8732-20db33c41829",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:39:21.465026+00:00"
+  },
+  {
+    "order_id": "a638296b-1632-4deb-8684-5ef34b51dfbf",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:39:21.581940+00:00"
+  },
+  {
+    "order_id": "04e9348f-e126-4ad9-8e9d-ba4498005dc2",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:39:21.700189+00:00"
+  },
+  {
+    "order_id": "7e29fd73-db65-409e-8d28-a6ded8c0f5e0",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:39:21.821876+00:00"
+  },
+  {
+    "order_id": "53eec9e0-e7a5-4632-a645-744f8fd64e8f",
+    "email": "a@b.pt",
+    "status": "SENT",
+    "processed_at": "2026-11-24T17:39:21.948081+00:00"
   }
 ]
