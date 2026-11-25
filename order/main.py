@@ -1,4 +1,3 @@
-# test 1
 import threading
 from fastapi.responses import JSONResponse
 from prometheus_client import Gauge
@@ -23,7 +22,7 @@ CB_STATE = Gauge("circuit_breaker_state", "0=Closed, 1=Open, 2=Half-Open")
 
 
 MAX_TICKETS = 4  # limite de bilhetes por pedido (RF2)
-MAX_TENTATIVAS = 3  # quantas vezes tentamos o Payment antes de desistir
+MAX_TENTATIVAS = 3  # quantas vezes tentamos o Payment antes de desistir, é 3 porque é um numero medio
 
 ORDERS_INITIATED = Counter(
     "orders_initiated_total",
@@ -168,7 +167,17 @@ def create_order(req: OrderRequest):
     ORDERS[order_id] = order
 
     # 3. Parte do payment
-    if not chama_payment(order):
+    try:
+        pago = chama_payment(order)
+    except CircuitoAberto:
+        CB_FALLBACKS.inc()
+        order.status = OrderStatus.FAILED
+        ORDERS_INITIATED.labels(status="FAILED").inc()
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Payment system unavailable, try again later"},
+        )
+    if not pago:
         order.status = OrderStatus.FAILED
         ORDERS_INITIATED.labels(status="FAILED").inc()
         raise HTTPException(status_code=502, detail="Pagamento falhou")
