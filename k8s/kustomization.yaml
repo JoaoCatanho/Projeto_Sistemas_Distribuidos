@@ -47,7 +47,7 @@ images:
   newTag: c5f17ba458ccb46526c292db8718b414737a2b5b
 - name: ticketmei-notification
   newName: ghcr.io/joaocatanho/ticketmei-notification
-  newTag: 7b2de53fbc5145a5fdbb009a4fee19bb9848101f
+  newTag: 17d1e200389788290ca225a573f8ce75f018abe1
 - name: ticketmei-order
   newName: ghcr.io/joaocatanho/ticketmei-order
   newTag: 081e6216439e2d91149d832b7ab43bfd26a4960a
